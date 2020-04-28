@@ -47,99 +47,24 @@ namespace MyControl
             SuspendLayout();
             ResumeLayout(false);
         }
-        public void Init(int r, int c, int width, ORDER_TYPE t)
+        private void HighLight(int r, int c)
         {
-            type = t;
-            Init(r, c, width / c, TABLE_T.BORDER);
-        }
-        public void Next(int step)
-        {
-            int dim = 0, offset = 0;
-            switch (type)
+            SetProperty(highlight_rc[0], highlight_rc[1], SET_T.BCOLOR | SET_T.ROW, colors[0]);
+            SetProperty(highlight_rc[0], highlight_rc[1], SET_T.BCOLOR | SET_T.COL, colors[0]);
+            if (r != highlight_rc[0] || c != highlight_rc[1])
             {
-                case ORDER_TYPE.SETS | ORDER_TYPE.ROW: dim = 1; offset = 1; break;
-                case ORDER_TYPE.SETS | ORDER_TYPE.COL: dim = 0; offset = 1; break;
-                case ORDER_TYPE.VARS | ORDER_TYPE.ROW: dim = 1; offset = 0; break;
-                case ORDER_TYPE.VARS | ORDER_TYPE.COL: dim = 0; offset = 0; break;
-            }
-            while (step > 0)
-            {
-                cur[dim]++;
-                if (cur[dim] >= rc[dim])
-                {
-                    cur[dim] = offset;
-                    cur[1 - dim] += 2 - offset;
-                }
-                step--;
+                SetProperty(r, c, SET_T.BCOLOR | SET_T.ROW, colors[1]);
+                SetProperty(r, c, SET_T.BCOLOR | SET_T.COL, colors[1]);
+                highlight_rc[0] = r;
+                highlight_rc[1] = c;
             }
         }
-        public void SetShadow(PROP_TYPE arg)
+        public void Init(int r, int c, int width, ORDER_T t,DispTips fun1)
         {
-            int i, j;
-            switch (arg)
-            {
-                case PROP_TYPE.NULL:
-                    SetProperty(0, 0, SET_T.ALL | SET_T.BCOLOR, colors[0]);
-                    break;
-                case PROP_TYPE.ROW:
-                    for (i = 1; i < rc[0]; i += 2)
-                        SetProperty(i, 0, SET_T.ROW | SET_T.BCOLOR, colors[1]);
-                    break;
-                case PROP_TYPE.COL:
-                    for (i = 1; i < rc[1]; i += 2)
-                        SetProperty(0, i, SET_T.COL | SET_T.BCOLOR, colors[1]);
-                    break;
-                case PROP_TYPE.BOTH:
-                    int si = 0;
-                    for (i = 0; i < rc[0]; i++)
-                    {
-                        for (j = 0; j < rc[1]; j++)
-                        {
-                            SetProperty(i, j, SET_T.ONE | SET_T.BCOLOR, colors[si]);
-                            si = 1 - si;
-                        }
-                        si = 1 - si;
-                    }
-                    break;
-            }
-        }
-        public void SetHeader(PROP_TYPE arg, string[] arr)
-        {
-            int i, j = 0;
-            if ((type & ORDER_TYPE.TYPE_MASK) == ORDER_TYPE.SETS)
-            {
-                if ((arg & PROP_TYPE.BOTH) == PROP_TYPE.COL)
-                {
-                    for (i = 1; i < rc[0]; i++)
-                        SetString(i, 0, arr[j++]);
-                }
-                else
-                {
-                    for (i = 1; i < rc[0]; i++)
-                        SetString(i, 0, i.ToString());
-                }
-                if ((arg & PROP_TYPE.BOTH) == PROP_TYPE.ROW)
-                {
-                    for (i = 1; i < rc[1]; i++)
-                        SetString(0, i, arr[j++]);
-                }
-                else
-                {
-                    for (i = 1; i < rc[1]; i++)
-                        SetString(0, i, i.ToString());
-                }
-            }
+            if ((t & ORDER_T.TYPE_MASK) == ORDER_T.VARS)
+                Init(r, c, width / c, TABLE_T.BORDER, t, null, fun1);
             else
-            {
-                SetCurPos(0, 0);
-                foreach (string str in arr)
-                    SetValue(str);
-            }
-        }
-        public void SetCurPos(int r, int c)
-        {
-            cur[0] = r;
-            cur[1] = c;
+                Init(r, c, width / c, TABLE_T.BORDER, t, HighLight, fun1);
         }
         public void SetValue(object arg)
         {
@@ -176,10 +101,8 @@ namespace MyControl
         }
 
         public enum PROP_TYPE { NULL, ROW, COL, BOTH };
-        public enum ORDER_TYPE { ROW, COL, ORDER_MASK = 1, SETS = 2, VARS = 4, TYPE_MASK = 0xFE };
         public enum EXPAND_TYPE { PUSH, SEIZE };
-        private ORDER_TYPE type;
-        private int[] cur = { 0, 0 };
-        private Color[] colors = { Color.White, Color.Cyan };
+        private Color[] colors = { Color.FromArgb(240, 240, 240), Color.Cyan };
+        private int[] highlight_rc = { 0, 0 };
     }
 }

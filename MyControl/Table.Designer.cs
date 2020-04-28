@@ -52,35 +52,36 @@ namespace MyControl
         }
         #endregion
 
+        public delegate void HighLightCross(int r, int c);
+        public delegate void DispTips(string str);
         private void ExtraInit()
         {
-            if (rc[0] * rc[1] != 0)
-            {
-                int i, j;
-                SuspendLayout();
-                this.Size = new Size(w * rc[1], h * rc[0]);
-                tbs = new TextBox[rc[0], rc[1]];
-                for (i = 0; i < rc[0]; i++)
-                {
-                    for (j = 0; j < rc[1]; j++)
-                    {
-                        tbs[i, j] = new TextBox();
-                        tbs[i, j].Font = this.Font;
-                        if (style == TABLE_T.INPUT)
-                            tbs[i, j].ReadOnly = false;
-                        else
-                            tbs[i, j].ReadOnly = true;
-                        if (style == TABLE_T.NULL)
-                            tbs[i, j].BorderStyle = BorderStyle.None;
-                        else
-                            tbs[i, j].BorderStyle = BorderStyle.FixedSingle;
-                        tbs[i, j].Location = new Point(j * w, i * h);
-                        tbs[i, j].Size = new Size(w, h);
-                        Controls.Add(tbs[i, j]);
-                    }
-                }
-                ResumeLayout(false);
-            }
+            SuspendLayout();
+            //Init(10, 10, 64, TABLE_T.CONTROLS, 0, null, null);
+            //AddLabel("1");
+            //AddLabel("2");
+            //AddLabel("3");
+            //AddLabel("4");
+            //AddLabel("5");
+            //Next(6);
+            //AddTextBox("T1");
+            //AddTextBox("T2");
+            //AddTextBox("T3");
+            //AddTextBox("T4");
+            //AddTextBox("T5");
+            //Next(6);
+            //AddCheckBox("T1");
+            //AddCheckBox("T2");
+            //AddCheckBox("T3");
+            //AddCheckBox("T4");
+            //AddCheckBox("T5");
+            //Next(3);
+            //AddComboBox(new string[] { "1", "2" });
+            //AddComboBox(new string[] { "3", "4" });
+            //AddComboBox(new string[] { "5", "6" });
+            //AddComboBox(new string[] { "7", "8" });
+            //AddComboBox(new string[] { "9", "10" });
+            ResumeLayout(false);
         }
         private bool InvalidRC(int r, int c)
         {
@@ -93,44 +94,159 @@ namespace MyControl
             switch (t)
             {
                 case SET_T.BCOLOR:
-                    tbs[r, c].BackColor = (Color)arg;
-                    break;
-                case SET_T.BORDER: 
-                    tbs[r,c].BorderStyle = (BorderStyle)arg;
+                    Controls[r * rc[1] + c].BackColor = (Color)arg;
                     break;
                 case SET_T.LEFT:
-                    tbs[r, c].Left = (int)arg;
+                    Controls[r * rc[1] + c].Left = (int)arg;
                     break;
                 case SET_T.WIDTH:
-                    tbs[r, c].Width = (int)arg;
+                    Controls[r * rc[1] + c].Width = (int)arg;
                     break;
             }
         }
-        public void Init(int r, int c, int weight, TABLE_T st)
+        private void SetCommonProperty(Control src,string str)
+        {
+            src.Font = this.Font;
+            src.Text = str;
+            src.Left = cur[1] * w;
+            src.Top = cur[0] * h;
+            src.Width = w;
+            src.Height = h;
+            src.Click += new EventHandler(src_Click);
+            Next(1);
+        }
+        private void src_Click(object sender, EventArgs e)
+        {
+            int ind = Controls.GetChildIndex((Control)sender);
+            if (fun1 != null)
+                fun1(ind / rc[1], ind % rc[1]);
+            if (fun2 != null)
+                fun2(Controls[ind].Text);
+        }
+
+        public void Init(int r, int c, int weight, TABLE_T st, ORDER_T t,HighLightCross f1,DispTips f2)
         {
             if (r * c != 0 && (r > 3 || c > 3))
             {
+                int i;
                 w = weight;
                 rc[0] = r;
                 rc[1] = c;
                 style = st;
+                type = 0;
+                fun1 = f1;
+                fun2 = f2;
                 Controls.Clear();
-                ExtraInit();
+                SuspendLayout();
+
+                this.Size = new Size(w * rc[1], h * rc[0]);
+                if (style != TABLE_T.CONTROLS)
+                {
+                    for (i = 0; i < r * c; i++)
+                        AddTextBox("");
+                    type = t;
+                }
+                ResumeLayout(false);
             }
             else
                 MessageBox.Show("行、列数需均不为0，且不全小于4");
         }
-        public string GetString(int r, int c)
+        public void Next(int step)
         {
-            if (!InvalidRC(r, c))
-                return null;
-            return tbs[r, c].Text;
+            switch (type)
+            {
+                case ORDER_T.SETS | ORDER_T.ROW:
+                    cur[1] += step;
+                    while (cur[1] >= rc[1]) {
+                        cur[1] -= rc[1];
+                        cur[0]++;
+                    }
+                    break;
+                case ORDER_T.SETS | ORDER_T.COL:
+                    cur[0] += step;
+                    while (cur[0] >= rc[0])
+                    {
+                        cur[0] -= rc[0];
+                        cur[1]++;
+                    }
+                    break;
+                case ORDER_T.VARS | ORDER_T.ROW:
+                    cur[1] += step * 2;
+                    while (cur[1] >= rc[1])
+                    {
+                        cur[1] -= rc[1];
+                        cur[0]++;
+                    }
+                    break;
+                case ORDER_T.VARS | ORDER_T.COL:
+                    cur[0] += step;
+                    while (cur[0] >= rc[0])
+                    {
+                        cur[0] -= rc[0];
+                        cur[1] += 2;
+                    }
+                    break;
+                default:
+                    cur[1] += step;
+                    while (cur[1] >= rc[1])
+                    {
+                        cur[1] -= rc[1];
+                        cur[0]++;
+                    }
+                    break;
+            }
+        }
+        public void SetCurPos(int r, int c)
+        {
+            cur[0] = r;
+            cur[1] = c;
+        }
+        public Control GetControl(int r, int c)
+        {
+            if (InvalidRC(r, c))
+            {
+                return Controls[r * rc[1] + c];
+            }
+            return null;
+        }
+        public void AddTextBox(string str)
+        {
+            TextBox tmp = new TextBox();
+            SetCommonProperty(tmp,str);
+            if (style == TABLE_T.INPUT)
+                tmp.ReadOnly = false;
+            else
+                tmp.ReadOnly = true;
+            if (style == TABLE_T.NULL)
+                tmp.BorderStyle = BorderStyle.None;
+            else
+                tmp.BorderStyle = BorderStyle.FixedSingle;
+            Controls.Add(tmp);
+        }
+        public void AddLabel(string str)
+        {
+            Label tmp = new Label();
+            SetCommonProperty(tmp, str);
+            Controls.Add(tmp);
+        }
+        public void AddCheckBox(string str)
+        {
+            CheckBox tmp = new CheckBox();
+            SetCommonProperty(tmp, str);
+            Controls.Add(tmp);
+        }
+        public void AddComboBox(string[] str)
+        {
+            ComboBox tmp = new ComboBox();
+            SetCommonProperty(tmp, str[0]);
+            tmp.Items.AddRange(str);
+            Controls.Add(tmp);
         }
         public void SetString(int r, int c, string str)
         {
             if (!InvalidRC(r, c))
                 return;
-            tbs[r, c].Text = str;
+            Controls[r * rc[1] + c].Text = str;
         }
         public void SetProperty(int r, int c, SET_T t, object arg)
         {
@@ -160,31 +276,40 @@ namespace MyControl
                     break;
             }
         }
+        public string GetString(int r, int c)
+        {
+            if (!InvalidRC(r, c))
+                return null;
+            return Controls[r * rc[1] + c].Text;
+        }
         public object GetProperty(int r, int c, SET_T t)
         {
             if (InvalidRC(r, c))
             {
                 switch (t)
                 {
-                    case SET_T.BCOLOR: return tbs[r, c].BackColor;
-                    case SET_T.BORDER: return tbs[r, c].BorderStyle;
-                    case SET_T.LEFT: return tbs[r, c].Left;
-                    case SET_T.WIDTH: return tbs[r, c].Width;
+                    case SET_T.BCOLOR: return Controls[r*rc[1]+c].BackColor;
+                    case SET_T.LEFT: return Controls[r*rc[1]+c].Left;
+                    case SET_T.WIDTH: return Controls[r*rc[1]+c].Width;
                 }
             }
             return null;
         }
 
-        public enum TABLE_T { NULL, BORDER, INPUT = 3 };
+        public enum TABLE_T { NULL, BORDER, INPUT, CONTROLS };
+        public enum ORDER_T { ROW, COL, ORDER_MASK = 1, SETS = 2, VARS = 4, TYPE_MASK = 0xFE };
         public enum SET_T
         {
             ONE, ROW, COL, ALL, RANGE_MASK = 3, BCOLOR = 4, FCOLOR = 8,
             LEFT = 0x10, TOP = 0x20, LOCATION = 0x30, WIDTH = 0x40, 
-            HIGH = 0x80, SIZE = 0xC0, BORDER = 0x100, PROP_MASK = 0xFFFC
+            HIGH = 0x80, SIZE = 0xC0, PROP_MASK = 0xFFFC
         };
         public int[] rc { get; private set; }
+        public ORDER_T type;
+        protected int[] cur = { 0, 0 };
+        private HighLightCross fun1;
+        private DispTips fun2;
         private TABLE_T style;
         private int w = 75, h = 26;
-        private TextBox[,] tbs;
     } 
 }
