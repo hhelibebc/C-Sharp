@@ -77,7 +77,7 @@ namespace MyControl
         }
         public void SetColWidth(int c, int width, EXPAND_TYPE t)
         {
-            int v, i, j;
+            int v, i;
             int old_width = (int)GetProperty(0, c, SET_T.WIDTH);
             SetProperty(0, c, SET_T.COL | SET_T.WIDTH, width);
             c++;
@@ -97,6 +97,30 @@ namespace MyControl
                 SetProperty(0, c, SET_T.COL | SET_T.WIDTH, v - (width - old_width));
                 v = (int)GetProperty(0, c, SET_T.LEFT);
                 SetProperty(0, c, SET_T.COL | SET_T.LEFT, v + (width - old_width));
+            }
+        }
+        public void SetRowHeight(int r, int height, EXPAND_TYPE t)
+        {
+            int v, i;
+            int old_high = (int)GetProperty(r, 0, SET_T.HIGH);
+            SetProperty(r, 0, SET_T.ROW | SET_T.HIGH, height);
+            r++;
+            if (r >= rc[0] || t == EXPAND_TYPE.PUSH)
+                this.Height += height - old_high;
+            if (t == EXPAND_TYPE.PUSH)
+            {
+                for (i = r; i < rc[0]; i++)
+                {
+                    v = (int)GetProperty(i, 0, SET_T.TOP);
+                    SetProperty(i, 0, SET_T.ROW | SET_T.TOP, v + (height - old_high));
+                }
+            }
+            else
+            {
+                v = (int)GetProperty(r, 0, SET_T.HIGH);
+                SetProperty(r, 0, SET_T.ROW | SET_T.HIGH, v - (height - old_high));
+                v = (int)GetProperty(r, 0, SET_T.TOP);
+                SetProperty(r, 0, SET_T.ROW | SET_T.TOP, v + (height - old_high));
             }
         }
 

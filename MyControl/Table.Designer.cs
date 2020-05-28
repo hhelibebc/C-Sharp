@@ -99,8 +99,14 @@ namespace MyControl
                 case SET_T.LEFT:
                     Controls[r * rc[1] + c].Left = (int)arg;
                     break;
+                case SET_T.TOP:
+                    Controls[r * rc[1] + c].Top = (int)arg;
+                    break;
                 case SET_T.WIDTH:
                     Controls[r * rc[1] + c].Width = (int)arg;
+                    break;
+                case SET_T.HIGH:
+                    Controls[r * rc[1] + c].Height = (int)arg;
                     break;
             }
         }
@@ -221,6 +227,7 @@ namespace MyControl
                 tmp.BorderStyle = BorderStyle.None;
             else
                 tmp.BorderStyle = BorderStyle.FixedSingle;
+            tmp.AutoSize = false;
             Controls.Add(tmp);
         }
         public void AddLabel(string str)
@@ -290,7 +297,9 @@ namespace MyControl
                 {
                     case SET_T.BCOLOR: return Controls[r*rc[1]+c].BackColor;
                     case SET_T.LEFT: return Controls[r*rc[1]+c].Left;
-                    case SET_T.WIDTH: return Controls[r*rc[1]+c].Width;
+                    case SET_T.WIDTH: return Controls[r * rc[1] + c].Width;
+                    case SET_T.TOP: return Controls[r * rc[1] + c].Top;
+                    case SET_T.HIGH: return Controls[r * rc[1] + c].Height;
                 }
             }
             return null;
