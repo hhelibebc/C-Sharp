@@ -8,3 +8,6 @@
 *.manifest
 *.settings
 *.csproj
+*.ssk
+*.config
+*.ini

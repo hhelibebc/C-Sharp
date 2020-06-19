@@ -1,0 +1,170 @@
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace TableTest
+{
+    public partial class Form3 : Common
+    {
+        public Form3()
+        {
+            InitializeComponent();
+            ExtraInit();
+        }
+        void ExtraInit() 
+        {
+            SuspendLayout();
+            for (int i = 0; i < 16; i++) 
+            {
+                for (int j = 0; j < 16; j++) 
+                {
+                    leds[i, j] = new MyControl.LED();
+                    leds[i, j].Location = new Point(j * size + offset, i * size + offset);
+                    leds[i, j].Init(size, Color.LightGray, Color.Red);
+                    Controls.Add(leds[i, j]);
+                }
+            }
+            ResumeLayout(false);
+            timer1.Start();
+        }
+
+        void DisplayChar(int ind) 
+        {
+            int si = ind << 5;
+            int i, j;
+            for (i = 0; i < 16; i++) 
+            {
+                oneChar[i] = (ushort)(FontData[si + i * 2] << 8 | FontData[si + i * 2 + 1]);
+            }
+            for (i = 0; i < 16; i++) 
+            {
+                for (j = 0; j < 16; j++) 
+                {
+                    leds[i, j].state = (((oneChar[i] >> (15-j)) & 0x01) == 0x01);
+                }
+            }
+        }
+        int cnt;
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (++cnt >= 6)
+                cnt = 0;
+            DisplayChar(cnt);
+        }
+
+        MyControl.LED[,] leds = new MyControl.LED[16, 16];
+        int size = 40, offset = 10;
+        ushort[] oneChar = new ushort[16];
+        byte[] FontData =
+        {
+        // 我
+        0x04,0x40,
+        0x0E,0x50,
+        0x78,0x48,
+        0x08,0x48,
+        0x08,0x40,
+        0xFF,0xFE,
+        0x08,0x40,
+        0x08,0x44,
+        0x0A,0x44,
+        0x0C,0x48,
+        0x18,0x30,
+        0x68,0x22,
+        0x08,0x52,
+        0x08,0x8A,
+        0x2B,0x06,
+        0x10,0x02,
+        // 已
+        0x00,0x00,
+        0x3F,0xF0,
+        0x00,0x10,
+        0x00,0x10,
+        0x00,0x10,
+        0x20,0x10,
+        0x20,0x10,
+        0x3F,0xF0,
+        0x20,0x00,
+        0x20,0x00,
+        0x20,0x00,
+        0x20,0x04,
+        0x20,0x04,
+        0x20,0x04,
+        0x1F,0xFC,
+        0x00,0x00,
+        // 经
+        0x10,0x00,
+        0x11,0xFC,
+        0x20,0x08,
+        0x24,0x10,
+        0x44,0x30,
+        0xF8,0x48,
+        0x10,0x84,
+        0x23,0x02,
+        0x40,0x00,
+        0xFD,0xFC,
+        0x40,0x20,
+        0x00,0x20,
+        0x1C,0x20,
+        0xE0,0x20,
+        0x43,0xFE,
+        0x00,0x00,
+        // 尽
+        0x00,0x00,
+        0x1F,0xF8,
+        0x10,0x08,
+        0x10,0x08,
+        0x10,0x08,
+        0x1F,0xF8,
+        0x10,0x48,
+        0x10,0x40,
+        0x10,0x20,
+        0x23,0x10,
+        0x20,0x88,
+        0x40,0x06,
+        0x8C,0x00,
+        0x03,0x00,
+        0x00,0x80,
+        0x00,0x40,
+        // 莉
+        0x04,0x40,
+        0x04,0x40,
+        0xFF,0xFE,
+        0x04,0x40,
+        0x00,0x00,
+        0x06,0x08,
+        0x78,0x08,
+        0x08,0x48,
+        0x08,0x48,
+        0xFF,0x48,
+        0x1C,0x48,
+        0x2A,0x48,
+        0x49,0x48,
+        0x88,0x08,
+        0x08,0x28,
+        0x08,0x10,
+        // 了
+        0x00,0x00,
+        0x7F,0xF8,
+        0x00,0x10,
+        0x00,0x20,
+        0x00,0x40,
+        0x01,0x80,
+        0x01,0x00,
+        0x01,0x00,
+        0x01,0x00,
+        0x01,0x00,
+        0x01,0x00,
+        0x01,0x00,
+        0x01,0x00,
+        0x01,0x00,
+        0x05,0x00,
+        0x02,0x00,
+        };
+    }
+}
